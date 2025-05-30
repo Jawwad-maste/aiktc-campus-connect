@@ -1,30 +1,36 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
+  const { user } = useAuth();
+
   const departments = [
     {
       name: "Computer Engineering",
       description: "Building the digital future with cutting-edge software and hardware solutions",
       color: "department-ce",
       features: ["Software Development", "System Architecture", "Network Security", "Database Management"],
-      gradient: "from-blue-500 to-blue-700"
+      gradient: "from-blue-500 to-blue-700",
+      slug: "computer-engineering"
     },
     {
       name: "AI & Machine Learning",
       description: "Pioneering intelligent systems and revolutionary machine learning applications",
       color: "department-aiml", 
       features: ["Deep Learning", "Neural Networks", "Computer Vision", "Natural Language Processing"],
-      gradient: "from-purple-500 to-purple-700"
+      gradient: "from-purple-500 to-purple-700",
+      slug: "ai-ml"
     },
     {
       name: "Data Science",
       description: "Transforming raw data into actionable insights and strategic decisions",
       color: "department-ds",
       features: ["Big Data Analytics", "Statistical Modeling", "Data Visualization", "Predictive Analytics"],
-      gradient: "from-orange-500 to-orange-700"
+      gradient: "from-orange-500 to-orange-700",
+      slug: "data-science"
     }
   ];
 
@@ -39,18 +45,32 @@ const Index = () => {
               <span className="text-aiktc-yellow text-lg">Engineering College</span>
             </div>
             <nav className="hidden md:flex space-x-8">
-              <a href="#" className="hover:text-aiktc-yellow transition-colors">Home</a>
-              <a href="#" className="hover:text-aiktc-yellow transition-colors">About</a>
-              <a href="#" className="hover:text-aiktc-yellow transition-colors">Departments</a>
-              <a href="#" className="hover:text-aiktc-yellow transition-colors">Contact</a>
+              <Link to="/" className="hover:text-aiktc-yellow transition-colors">Home</Link>
+              <a href="#about" className="hover:text-aiktc-yellow transition-colors">About</a>
+              <a href="#departments" className="hover:text-aiktc-yellow transition-colors">Departments</a>
+              <a href="#contact" className="hover:text-aiktc-yellow transition-colors">Contact</a>
             </nav>
             <div className="flex space-x-3">
-              <Button variant="outline" className="border-aiktc-yellow text-aiktc-yellow hover:bg-aiktc-yellow hover:text-aiktc-black">
-                Login
-              </Button>
-              <Button className="bg-aiktc-coral hover:bg-red-600 text-white">
-                Register
-              </Button>
+              {user ? (
+                <Link to="/dashboard">
+                  <Button className="bg-aiktc-coral hover:bg-red-600 text-white">
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <Button variant="outline" className="border-aiktc-yellow text-aiktc-yellow hover:bg-aiktc-yellow hover:text-aiktc-black">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/auth">
+                    <Button className="bg-aiktc-coral hover:bg-red-600 text-white">
+                      Register
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -77,7 +97,7 @@ const Index = () => {
       </section>
 
       {/* Departments Section */}
-      <section className="py-16 px-6 bg-white/50">
+      <section id="departments" className="py-16 px-6 bg-white/50">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h3 className="text-4xl font-bold text-aiktc-black mb-4">Our Departments</h3>
@@ -114,11 +134,13 @@ const Index = () => {
                       </Badge>
                     ))}
                   </div>
-                  <Button 
-                    className="w-full bg-aiktc-coral hover:bg-red-600 text-white font-semibold py-2 mt-4 transition-all duration-300 group-hover:shadow-lg"
-                  >
-                    Explore Department →
-                  </Button>
+                  <Link to={`/department/${dept.slug}`}>
+                    <Button 
+                      className="w-full bg-aiktc-coral hover:bg-red-600 text-white font-semibold py-2 mt-4 transition-all duration-300 group-hover:shadow-lg"
+                    >
+                      Explore Department →
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -156,25 +178,27 @@ const Index = () => {
           <h3 className="text-3xl font-bold text-center text-aiktc-black mb-12">Quick Access</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: "Student Portal", description: "Access courses and assignments", icon: "📚" },
-              { title: "Faculty Dashboard", description: "Manage classes and materials", icon: "👨‍🏫" },
-              { title: "Admissions", description: "Apply for our programs", icon: "📝" },
-              { title: "Library", description: "Digital resources and books", icon: "📖" }
+              { title: "Student Portal", description: "Access courses and assignments", icon: "📚", link: user ? "/dashboard" : "/auth" },
+              { title: "Faculty Dashboard", description: "Manage classes and materials", icon: "👨‍🏫", link: user ? "/dashboard" : "/auth" },
+              { title: "Admissions", description: "Apply for our programs", icon: "📝", link: "/auth" },
+              { title: "Library", description: "Digital resources and books", icon: "📖", link: "#" }
             ].map((item, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-shadow cursor-pointer border border-aiktc-gold/30 bg-white/80">
-                <CardContent className="p-6">
-                  <div className="text-4xl mb-4">{item.icon}</div>
-                  <h4 className="text-xl font-semibold text-aiktc-black mb-2">{item.title}</h4>
-                  <p className="text-gray-600">{item.description}</p>
-                </CardContent>
-              </Card>
+              <Link key={index} to={item.link}>
+                <Card className="text-center hover:shadow-lg transition-shadow cursor-pointer border border-aiktc-gold/30 bg-white/80 h-full">
+                  <CardContent className="p-6">
+                    <div className="text-4xl mb-4">{item.icon}</div>
+                    <h4 className="text-xl font-semibold text-aiktc-black mb-2">{item.title}</h4>
+                    <p className="text-gray-600">{item.description}</p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-aiktc-black text-aiktc-ivory py-12 px-6">
+      <footer id="contact" className="bg-aiktc-black text-aiktc-ivory py-12 px-6">
         <div className="container mx-auto">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
