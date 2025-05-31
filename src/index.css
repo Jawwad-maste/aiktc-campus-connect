@@ -66,3 +66,17 @@
     @apply bg-gradient-to-r from-aiktc-coral to-aiktc-yellow bg-clip-text text-transparent;
   }
 }
+
+@layer utilities {
+  @keyframes shine {
+    0% {
+      background-position: 100%;
+    }
+    100% {
+      background-position: -100%;
+    }
+  }
+  .animate-shine {
+    animation: shine 5s linear infinite;
+  }
+}

@@ -1,3 +1,4 @@
+import InteractiveHero from "@/components/ui/hero-section-nexus";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,65 +37,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-aiktc-ivory">
-      {/* Header */}
-      <header className="bg-aiktc-black text-aiktc-ivory shadow-lg">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-3xl font-bold">AIKTC</h1>
-              <span className="text-aiktc-yellow text-lg">Engineering College</span>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              <Link to="/" className="hover:text-aiktc-yellow transition-colors">Home</Link>
-              <a href="#about" className="hover:text-aiktc-yellow transition-colors">About</a>
-              <a href="#departments" className="hover:text-aiktc-yellow transition-colors">Departments</a>
-              <a href="#contact" className="hover:text-aiktc-yellow transition-colors">Contact</a>
-            </nav>
-            <div className="flex space-x-3">
-              {user ? (
-                <Link to="/dashboard">
-                  <Button className="bg-aiktc-coral hover:bg-red-600 text-white">
-                    Dashboard
-                  </Button>
-                </Link>
-              ) : (
-                <>
-                  <Link to="/auth">
-                    <Button variant="outline" className="border-aiktc-yellow text-aiktc-yellow hover:bg-aiktc-yellow hover:text-aiktc-black">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link to="/auth">
-                    <Button className="bg-aiktc-coral hover:bg-red-600 text-white">
-                      Register
-                    </Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto text-center">
-          <div className="animate-fade-in">
-            <h2 className="text-5xl md:text-7xl font-bold mb-6 text-aiktc-black">
-              Welcome to <span className="gradient-text">AIKTC</span>
-            </h2>
-            <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-4xl mx-auto leading-relaxed">
-              Advancing Innovation in Knowledge, Technology & Computing
-            </p>
-            <div className="bg-aiktc-yellow/20 rounded-xl p-6 max-w-3xl mx-auto border border-aiktc-gold/30">
-              <p className="text-lg text-gray-800">
-                Empowering the next generation of engineers and innovators through excellence in education, 
-                cutting-edge research, and industry collaboration.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Interactive Hero Section */}
+      <InteractiveHero />
 
       {/* Departments Section */}
       <section id="departments" className="py-16 px-6 bg-white/50">
