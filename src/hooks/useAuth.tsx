@@ -9,6 +9,7 @@ interface UserProfile {
   full_name: string;
   role: 'student' | 'faculty';
   department: 'computer_engineering' | 'ai_ml' | 'data_science';
+  student_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -65,7 +66,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      
+      // Ensure we have the email from the user object
+      const profileWithEmail = {
+        ...data,
+        email: data.email || user?.email || '',
+      };
+      
+      setProfile(profileWithEmail);
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
@@ -77,7 +85,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`
+      }
+    });
     if (error) throw error;
 
     if (data.user) {

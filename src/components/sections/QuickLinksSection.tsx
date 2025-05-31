@@ -7,7 +7,7 @@ const QuickLinksSection = () => {
   const { user } = useAuth();
 
   return (
-    <section className="py-16 px-6">
+    <section className="py-16 px-6 bg-white">
       <div className="container mx-auto">
         <h3 className="text-3xl font-bold text-center text-aiktc-black mb-12">Quick Access</h3>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -32,14 +32,18 @@ const Auth = () => {
         await signIn(email, password);
         toast({ title: "Welcome back!", description: "You have been signed in successfully." });
       } else {
+        if (!fullName.trim()) {
+          throw new Error("Full name is required");
+        }
         await signUp(email, password, { full_name: fullName, role, department });
         toast({ title: "Account created!", description: "Please check your email for verification." });
       }
       navigate('/dashboard');
     } catch (error: any) {
+      console.error('Auth error:', error);
       toast({ 
         title: "Error", 
-        description: error.message || "An error occurred", 
+        description: error.message || "An error occurred during authentication", 
         variant: "destructive" 
       });
     } finally {
@@ -74,7 +78,7 @@ const Auth = () => {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Enter your full name"
-                    required
+                    required={!isLogin}
                   />
                 </div>
               )}
@@ -100,6 +104,7 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
+                  minLength={6}
                 />
               </div>
 
