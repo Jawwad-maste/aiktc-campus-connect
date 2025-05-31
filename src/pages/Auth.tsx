@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -32,12 +31,24 @@ const Auth = () => {
 
         if (error) throw error;
 
+        // Check user role and redirect accordingly
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
 
-        navigate('/dashboard');
+        // Redirect based on role
+        if (profileData?.role === 'faculty') {
+          navigate('/faculty-dashboard');
+        } else {
+          navigate('/student-dashboard');
+        }
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -72,7 +83,12 @@ const Auth = () => {
           description: "Welcome to AIKTC! You can now access your dashboard.",
         });
 
-        navigate('/dashboard');
+        // Redirect based on role
+        if (role === 'faculty') {
+          navigate('/faculty-dashboard');
+        } else {
+          navigate('/student-dashboard');
+        }
       }
     } catch (error: any) {
       toast({
