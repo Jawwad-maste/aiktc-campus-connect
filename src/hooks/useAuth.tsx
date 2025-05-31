@@ -6,12 +6,12 @@ import type { User } from '@supabase/supabase-js';
 interface UserProfile {
   id: string;
   email: string;
-  full_name: string;
+  full_name: string | null;
   role: 'student' | 'faculty';
   department: 'computer_engineering' | 'ai_ml' | 'data_science';
-  student_id?: string;
-  created_at: string;
-  updated_at: string;
+  student_id?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 interface AuthContextType {
@@ -32,18 +32,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getInitialSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       setUser(session?.user ?? null);
       
       if (session?.user) {
@@ -59,59 +65,103 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
       
-      // Ensure we have the email from the user object
-      const profileWithEmail = {
-        ...data,
-        email: data.email || user?.email || '',
-      };
-      
-      setProfile(profileWithEmail);
+      if (data) {
+        // Create profile with proper typing and email from auth user
+        const profileData: UserProfile = {
+          id: data.id,
+          email: user?.email || '',
+          full_name: data.full_name,
+          role: (data.role as 'student' | 'faculty') || 'student',
+          department: (data.department as 'computer_engineering' | 'ai_ml' | 'data_science') || 'computer_engineering',
+          student_id: data.student_id,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+        };
+        
+        console.log('Profile fetched successfully:', profileData);
+        setProfile(profileData);
+      }
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error in fetchProfile:', error);
     }
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ 
+        email: email.trim(), 
+        password 
+      });
+      
+      if (error) throw error;
+      
+      console.log('Sign in successful:', data.user?.id);
+    } catch (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    }
   };
 
   const signUp = async (email: string, password: string, userData: Partial<UserProfile>) => {
-    const { data, error } = await supabase.auth.signUp({ 
-      email, 
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`
+    try {
+      const { data, error } = await supabase.auth.signUp({ 
+        email: email.trim(), 
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      
+      if (error) throw error;
+
+      if (data.user) {
+        console.log('User created, creating profile:', data.user.id);
+        
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([{
+            id: data.user.id,
+            full_name: userData.full_name || '',
+            role: userData.role || 'student',
+            department: userData.department || 'computer_engineering',
+          }]);
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+          throw profileError;
+        }
+        
+        console.log('Profile created successfully');
       }
-    });
-    if (error) throw error;
-
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([{
-          id: data.user.id,
-          email: data.user.email!,
-          full_name: userData.full_name || '',
-          role: userData.role || 'student',
-          department: userData.department || 'computer_engineering',
-        }]);
-
-      if (profileError) throw profileError;
+    } catch (error) {
+      console.error('Sign up error:', error);
+      throw error;
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      setUser(null);
+      setProfile(null);
+    } catch (error) {
+      console.error('Sign out error:', error);
+      throw error;
+    }
   };
 
   return (

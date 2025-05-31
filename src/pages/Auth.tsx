@@ -25,25 +25,65 @@ const Auth = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email.trim() || !password.trim()) {
+      toast({ 
+        title: "Error", 
+        description: "Please fill in all required fields", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    if (!isLogin && !fullName.trim()) {
+      toast({ 
+        title: "Error", 
+        description: "Full name is required for registration", 
+        variant: "destructive" 
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       if (isLogin) {
         await signIn(email, password);
-        toast({ title: "Welcome back!", description: "You have been signed in successfully." });
+        toast({ 
+          title: "Welcome back!", 
+          description: "You have been signed in successfully." 
+        });
+        navigate('/dashboard');
       } else {
-        if (!fullName.trim()) {
-          throw new Error("Full name is required");
-        }
-        await signUp(email, password, { full_name: fullName, role, department });
-        toast({ title: "Account created!", description: "Please check your email for verification." });
+        await signUp(email, password, { 
+          full_name: fullName.trim(), 
+          role, 
+          department 
+        });
+        toast({ 
+          title: "Account created!", 
+          description: "Please check your email for verification if required." 
+        });
+        navigate('/dashboard');
       }
-      navigate('/dashboard');
     } catch (error: any) {
       console.error('Auth error:', error);
+      
+      let errorMessage = "An error occurred during authentication";
+      
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Please check your email and click the confirmation link.";
+      } else if (error.message?.includes('Password should be at least 6 characters')) {
+        errorMessage = "Password must be at least 6 characters long.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({ 
-        title: "Error", 
-        description: error.message || "An error occurred during authentication", 
+        title: "Authentication Error", 
+        description: errorMessage, 
         variant: "destructive" 
       });
     } finally {
@@ -72,7 +112,7 @@ const Auth = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="fullName">Full Name *</Label>
                   <Input
                     id="fullName"
                     value={fullName}
@@ -84,7 +124,7 @@ const Auth = () => {
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -96,7 +136,7 @@ const Auth = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password *</Label>
                 <Input
                   id="password"
                   type="password"
@@ -106,12 +146,15 @@ const Auth = () => {
                   required
                   minLength={6}
                 />
+                {!isLogin && (
+                  <p className="text-xs text-gray-500">Password must be at least 6 characters</p>
+                )}
               </div>
 
               {!isLogin && (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
+                    <Label htmlFor="role">Role *</Label>
                     <Select value={role} onValueChange={(value: 'student' | 'faculty') => setRole(value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your role" />
@@ -124,7 +167,7 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="department">Department</Label>
+                    <Label htmlFor="department">Department *</Label>
                     <Select value={department} onValueChange={(value: 'computer_engineering' | 'ai_ml' | 'data_science') => setDepartment(value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select your department" />
@@ -144,14 +187,20 @@ const Auth = () => {
                 className="w-full bg-aiktc-coral hover:bg-red-600 text-white"
                 disabled={loading}
               >
-                {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
+                {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Sign Up')}
               </Button>
             </form>
 
             <div className="mt-4 text-center">
               <button
                 type="button"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  // Clear form when switching
+                  setEmail('');
+                  setPassword('');
+                  setFullName('');
+                }}
                 className="text-aiktc-coral hover:underline text-sm"
               >
                 {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
